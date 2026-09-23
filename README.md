@@ -1,4 +1,4 @@
-# CASEFIRE — PvP inventory duel prototype
+# CASEWARS — PvP inventory duel prototype
 
 Standalone mobile-first web prototype. There is no build step or server dependency. Open `index.html` locally or publish these three files through GitHub Pages.
 
