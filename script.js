@@ -1,5 +1,6 @@
 const COLS = 8, ROWS = 5;
 const TYPES = {
+  knife:{name:'Нож',icon:'🗡',w:2,h:1,kind:'weapon',damage:8,cooldown:0,ammo:null},
   pistol: {name:'Пистолет', icon:'🔫', w:2,h:1,kind:'weapon', damage:18, cooldown:1, ammo:'bullets'},
   shotgun:{name:'Дробовик',icon:'▰',w:3,h:1,kind:'weapon',damage:30,cooldown:2,ammo:'shells'},
   launcher:{name:'Базука',icon:'🚀',w:4,h:1,kind:'weapon',damage:44,cooldown:0,ammo:'rockets'},
@@ -17,7 +18,7 @@ const s={phase:'prep',round:1,deck:[],items:[],selectedDeck:null,selectedItem:nu
 const random = arr=>arr[Math.floor(Math.random()*arr.length)];
 function make(type,extra={}){return{id:++s.id,type,x:0,y:0,rot:false,used:false,...extra}}
 function drawDeck(){
-  const base=['pistol','bullets','shotgun','shells','launcher','rockets','green','red','yellow'];
+  const base=['knife','pistol','bullets','shotgun','shells','launcher','rockets','green','red','yellow'];
   s.deck=[...base,...Array.from({length:4},()=>random(['bullets','shells','green','green','red','yellow','pistol','shotgun']))].map(type=>make(type));
   s.selectedDeck=null;render();status('Колода обновлена. Выберите предмет.');
 }
@@ -43,7 +44,7 @@ function renderGrid(){
   s.items.forEach(item=>{let t=TYPES[item.type],{w,h}=dims(item),el=document.createElement('div');el.className=`case-item item-${item.type} ${s.selectedItem===item.id?'active':''} ${s.herbs.includes(item.id)?'marked':''}`;
     el.style.cssText=`left:${item.x/COLS*100}%;top:${item.y/ROWS*100}%;width:${w/COLS*100}%;height:${h/ROWS*100}%`;
     const caption=item.type==='mix'?item.mix.map(k=>({green:'З',red:'К',yellow:'Ж'})[k]).join('+'):t.name;
-    let count=t.kind==='ammo'?`<small>×${item.remaining??t.amount}</small>`:t.kind==='weapon'&&s.phase==='battle'?`<small>ЗАРЯДЫ ${s.ammo[t.ammo]}</small>`:'';
+    let count=item.type==='knife'?'<small>∞</small>':t.kind==='ammo'?`<small>×${item.remaining??t.amount}</small>`:t.kind==='weapon'&&s.phase==='battle'?`<small>ЗАРЯДЫ ${s.ammo[t.ammo]}</small>`:'';
     el.innerHTML=`<div class="item-face"><span class="item-art">${t.icon}</span><span class="item-info">${caption}${count}</span></div>`;
     el.setAttribute('role','button');el.tabIndex=0;el.setAttribute('aria-label',t.name);el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();selectItem(item)}});el.addEventListener('click',ev=>{ev.stopPropagation();selectItem(item)});attachDrag(el,item,'case');if(duel&&s.phase==='battle'&&t.kind==='weapon'){const wait=Math.max(0,(duel.player.ready[item.type]||0)-duel.turn);if(wait){el.classList.add('cooling');el.querySelector('small').textContent=`ПАУЗА ${wait} х.`;}}layer.append(el)
   });
@@ -69,7 +70,7 @@ function syncDuel(){
 }
 function actionName(action,fighter){
   if(!action)return 'Выберите действие';
-  const names={guard:'Блок',dodge:'Уклонение',strike:'Удар',heal:'Лечение',combine:'Смешивание'};
+  const names={guard:'Блок',dodge:'Уклонение',heal:'Лечение',combine:'Смешивание'};
   return names[action.kind]||TYPES[action.type||fighter.items.find(i=>i.id===action.id)?.type]?.name||'Выстрел';
 }
 function chooseBot(){
@@ -105,7 +106,7 @@ function renderTactics(){
   $('turn-info').textContent=`Выносливость ${f.energy}/2 · враг ${duel.enemy.energy}/2`;
   $('primary').textContent=resolving?'РАЗРЕШЕНИЕ…':pending?`${actionName(pending,f)} · ХОД ✓`:'ВЫБЕРИТЕ ДЕЙСТВИЕ';
   $('primary').disabled=resolving||!Duel.legal(f,pending,duel.turn);
-  for(const kind of ['guard','dodge','strike']){
+  for(const kind of ['guard','dodge']){
     $(kind).disabled=resolving||!Duel.legal(f,{kind},duel.turn);
     $(kind).classList.toggle('chosen',pending?.kind===kind);
     $(kind).setAttribute('aria-pressed',String(pending?.kind===kind));
@@ -116,7 +117,7 @@ function selectAction(action){
   if(!Duel.legal(duel.player,action,duel.turn))return status('Сейчас недоступно: проверьте заряды, паузу, здоровье и выносливость.');
   pending=action;s.selectedItem=action.id||null;
   if(action.kind!=='combine')s.herbs=[];
-  const hints={guard:'Блок: −75% урона пуль, +1 выносливость. Ракета пробивает.',dodge:'Уклонение: −1 выносливость. Дробовик всё ещё наносит 15.',strike:'Удар: 8 урона. Без патронов и паузы.',heal:'Лечение займёт ход. Противник тоже выполнит действие.',combine:'Смешивание займёт ход; смесь можно применить следующим.'};
+  const hints={guard:'Блок: −75% урона пуль, +1 выносливость. Ракета пробивает.',dodge:'Уклонение: −1 выносливость. Дробовик всё ещё наносит 15.',heal:'Лечение займёт ход. Противник тоже выполнит действие.',combine:'Смешивание займёт ход; смесь можно применить следующим.'};
   const type=duel.player.items.find(i=>i.id===action.id)?.type,w=Duel.WEAPONS[type];
   status(hints[action.kind]||`${TYPES[type].name}: ${w.damage} урона, пауза ${w.cooldown} х. Подтвердите ход.`);render();
 }
@@ -160,13 +161,15 @@ function commitTurn(){
 function end(result){
   s.phase='end';pending=null;enemyPlan=null;resolving=false;
   $('arena-message').textContent=result==='draw'?'НИЧЬЯ':result==='win'?'ПОБЕДА':'ПОРАЖЕНИЕ';
-  status(`${duel.turn-1} ходов · ${result==='draw'?'Равный результат.':result==='win'?'Тактика сработала.':'Попробуйте чередовать оружие и защиту.'}`);render();
+  const limit=duel.player.hp>0&&duel.enemy.hp>0;
+  const percentage=f=>`${Number((f.hp/f.maxHp*100).toFixed(2))}%`;
+  status(limit?`Лимит 24 ходов: ${percentage(duel.player)} против ${percentage(duel.enemy)} — ${result==='draw'?'ничья':result==='win'?'победа по здоровью':'поражение по здоровью'}.`:`${duel.turn-1} ходов · ${result==='draw'?'Оба бойца повержены.':result==='win'?'Здоровье соперника исчерпано.':'Ваше здоровье исчерпано.'}`);render();
 }
 function reset(){
   clearTimeout(resolutionTimer);duel=null;pending=null;enemyPlan=null;resolving=false;s.phase='prep';s.round++;s.items=[];s.selectedItem=null;s.herbs=[];s.hp=s.enemyHp=100;s.maxHp=s.enemyMaxHp=100;
   $('arena-message').textContent='СОБЕРИТЕ ЧЕМОДАН';$('turn-log').textContent='';drawDeck();
 }
-for(const kind of ['guard','dodge','strike'])$(kind).addEventListener('click',()=>selectAction({kind}));
+for(const kind of ['guard','dodge'])$(kind).addEventListener('click',()=>selectAction({kind}));
 $('rules-open').addEventListener('click',()=>$('rules').showModal());
 
 function pointCell(cx,cy){let r=$('case-grid').getBoundingClientRect();if(cx<r.left||cx>=r.right||cy<r.top||cy>=r.bottom)return null;return{x:Math.floor((cx-r.left)/r.width*COLS),y:Math.floor((cy-r.top)/r.height*ROWS)}}

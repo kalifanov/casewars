@@ -4,6 +4,20 @@ const D = require('./duel');
 const inventory = ['pistol','bullets','shotgun','shells','launcher','rockets','green','red','yellow'].map((type,id)=>({type,id:id+1,x:id%8,y:0}));
 const fresh = () => ({turn:1,player:D.fighter(inventory),enemy:D.fighter(inventory),result:null});
 const shot = {kind:'attack',id:1}, guard={kind:'guard'}, dodge={kind:'dodge'};
+test('knife requires inventory, lasts forever and can attack every turn without ammo',()=>{
+ let s=fresh();const knife={kind:'attack',id:10};
+ assert.equal(D.legal(s.player,knife,1),false);
+ assert.equal(D.legal(s.player,{kind:'strike'},1),false);
+ s.player.items=[{id:10,type:'knife',x:0,y:0}];
+ for(let i=0;i<10;i++){
+   assert.equal(D.legal(s.player,knife,s.turn),true);
+   s=D.resolve(s,knife,guard);
+   assert.equal(s.last.player.dealt,2);
+   assert.equal(s.player.items.length,1);
+   assert.equal(s.player.items[0].type,'knife');
+ }
+ assert.equal(D.damage({type:'knife',damage:8},'dodge'),0);
+});
 test('simultaneous lethal hits draw, input state stays unchanged',()=>{
  const s=fresh();s.player.hp=s.enemy.hp=18;
  const n=D.resolve(s,shot,shot);

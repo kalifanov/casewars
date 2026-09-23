@@ -97,7 +97,7 @@ footer { flex-shrink: 0; padding: 3px 6px 5px; font-size: 9px; }
 /* Simultaneous turn controls and readable combat feedback. */
 [hidden] { display: none !important; }
 .turn-info { font-size: 10px; color: #c6b48c; margin-bottom: 5px; }
-.tactic-actions { display: grid; grid-template-columns: 1fr 1.3fr 1fr 30px; gap: 5px; margin-bottom: 6px; }
+.tactic-actions { display: grid; grid-template-columns: 1fr 1.3fr 30px; gap: 5px; margin-bottom: 6px; }
 .tactic-actions button { height: 34px; padding: 3px; border: 1px solid #65756c; border-radius: 4px; background: #22352f; color: #e8e9df; font-size: 11px; }
 .tactic-actions .chosen { border-color: #f6c980; background: #665132; }
 button:disabled { opacity: .45; cursor: default; }
@@ -116,7 +116,7 @@ button:disabled { opacity: .45; cursor: default; }
 .turn-projectile.enemy { animation: enemy-shot .6s ease-in forwards; }
 .turn-projectile.shotgun { height: 20px; box-shadow: 0 9px 0 #fbd68f, 0 -9px 0 #fbd68f; }
 .turn-projectile.launcher { height: 15px; width: 24px; background: #f98f42; }
-.turn-projectile.strike { height: 24px; width: 24px; background: #fff5; }
+.turn-projectile.knife { height: 24px; width: 24px; background: #fff5; }
 @keyframes player-shot { from { left: 23%; } 85% { left: 77%; opacity: 1; } to { left: 77%; transform: scale(3); opacity: 0; } }
 @keyframes enemy-shot { from { left: 77%; } 85% { left: 23%; opacity: 1; } to { left: 23%; transform: scale(3); opacity: 0; } }
 @keyframes evade { 40%,70% { transform: translate(-50%,-100%); opacity: .6; } }

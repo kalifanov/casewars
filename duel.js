@@ -1,6 +1,7 @@
 /* Shared, deterministic duel rules. No DOM, timers or opponent AI here. */
 (function (root) {
   const WEAPONS = {
+    knife: { damage: 8, cooldown: 0, ammo: null },
     pistol: { damage: 18, cooldown: 1, ammo: 'bullets' },
     shotgun: { damage: 30, cooldown: 2, ammo: 'shells' },
     launcher: { damage: 44, cooldown: 0, ammo: 'rockets' }
@@ -14,11 +15,11 @@
   function ammo(f, type) { return f.items.filter(i => i.type === type).reduce((n, i) => n + i.remaining, 0); }
   function legal(f, action, turn) {
     if (!action || f.hp <= 0) return false;
-    if (action.kind === 'guard' || action.kind === 'strike') return true;
+    if (action.kind === 'guard') return true;
     if (action.kind === 'dodge') return f.energy > 0;
     const item = f.items.find(i => i.id === action.id);
     if (action.kind === 'attack') return !!item && !!WEAPONS[item.type] &&
-      (f.ready[item.type] || 0) <= turn && ammo(f, WEAPONS[item.type].ammo) > 0;
+      (f.ready[item.type] || 0) <= turn && (!WEAPONS[item.type].ammo || ammo(f, WEAPONS[item.type].ammo) > 0);
     if (action.kind === 'heal') return !!item && (item.type === 'green' ||
       (item.type === 'mix' && item.mix.includes('green'))) &&
       (f.hp < f.maxHp || (item.mix || []).includes('yellow'));
@@ -31,7 +32,7 @@
     return false;
   }
   function actions(f, turn) {
-    const list = [{ kind: 'guard' }, { kind: 'dodge' }, { kind: 'strike' }];
+    const list = [{ kind: 'guard' }, { kind: 'dodge' }];
     f.items.forEach(i => list.push({ kind: WEAPONS[i.type] ? 'attack' : 'heal', id: i.id }));
     const herbs = ['green', 'red', 'yellow'].map(type => f.items.find(i => i.type === type)).filter(Boolean);
     list.push({ kind: 'combine', ids: herbs.map(i => i.id) });
@@ -47,13 +48,14 @@
     const out = { kind: a.kind, damage: 0, healed: 0 };
     if (a.kind === 'guard') f.energy = Math.min(2, f.energy + 1);
     if (a.kind === 'dodge') f.energy--;
-    if (a.kind === 'strike') Object.assign(out, { type: 'strike', damage: 8 });
     const item = f.items.find(i => i.id === a.id);
     if (a.kind === 'attack') {
       const weapon = WEAPONS[item.type];
       Object.assign(out, { type: item.type, damage: weapon.damage });
-      const stack = f.items.find(i => i.type === weapon.ammo && i.remaining > 0);
-      stack.remaining--;
+      if (weapon.ammo) {
+        const stack = f.items.find(i => i.type === weapon.ammo && i.remaining > 0);
+        stack.remaining--;
+      }
       f.items = f.items.filter(i => i.remaining !== 0 && !(item.type === 'launcher' && i.id === item.id));
       f.ready[item.type] = turn + weapon.cooldown + 1;
     }
