@@ -1,4 +1,4 @@
-const COLS = 8, ROWS = 5;
+const COLS = 5, ROWS = 3;
 const TYPES = {
   knife:{name:'Нож',icon:'🗡',w:2,h:1,kind:'weapon',damage:8,cooldown:0,ammo:null},
   pistol: {name:'Пистолет', icon:'🔫', w:2,h:1,kind:'weapon', damage:18, cooldown:1, ammo:'bullets'},
@@ -20,7 +20,7 @@ function make(type,extra={}){return{id:++s.id,type,x:0,y:0,rot:false,used:false,
 function drawDeck(){
   const base=['knife','pistol','bullets','shotgun','shells','launcher','rockets','green','red','yellow'];
   s.deck=[...base,...Array.from({length:4},()=>random(['bullets','shells','green','green','red','yellow','pistol','shotgun']))].map(type=>make(type));
-  s.selectedDeck=null;render();status('Колода обновлена. Выберите предмет.');
+  s.selectedDeck=null;s.selectedItem=null;render();status('Уложите снаряжение в 15 клеток. Крупное оружие занимает больше места.');
 }
 function dims(item){const t=TYPES[item.type];return item.rot?{w:t.h,h:t.w}:{w:t.w,h:t.h}}
 function canPlace(item,x,y,ignore=null){let {w,h}=dims(item);if(x<0||y<0||x+w>COLS||y+h>ROWS)return false;
@@ -30,6 +30,7 @@ function place(x,y){
   if(s.phase!=='prep')return;
   if(s.selectedItem){const item=s.items.find(i=>i.id===s.selectedItem);if(item&&canPlace(item,x,y,item)){item.x=x;item.y=y;s.selectedItem=null;status('Предмет перемещён.');render()}else status('Здесь недостаточно места.');return}
   const item=s.deck.find(i=>i.id===s.selectedDeck);if(!item)return status('Сначала выберите предмет из колоды.');
+  if(item.used)return;
   if(!canPlace(item,x,y))return status('Здесь недостаточно места. Поверните предмет или выберите другие клетки.');
   item.x=x;item.y=y;item.used=true;s.items.push(item);s.selectedDeck=null;status(`${TYPES[item.type].name} добавлен в чемодан.`);render();
 }
@@ -48,10 +49,12 @@ function renderGrid(){
     el.innerHTML=`<div class="item-face"><span class="item-art">${t.icon}</span><span class="item-info">${caption}${count}</span></div>`;
     el.setAttribute('role','button');el.tabIndex=0;el.setAttribute('aria-label',t.name);el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();selectItem(item)}});el.addEventListener('click',ev=>{ev.stopPropagation();selectItem(item)});attachDrag(el,item,'case');if(duel&&s.phase==='battle'&&t.kind==='weapon'){const wait=Math.max(0,(duel.player.ready[item.type]||0)-duel.turn);if(wait){el.classList.add('cooling');el.querySelector('small').textContent=`ПАУЗА ${wait} х.`;}}layer.append(el)
   });
+  $('loadout-count').textContent=`Чемодан ${COLS} × ${ROWS} · ${COLS*ROWS} клеток`;
+  $('return-item').hidden=s.phase!=='prep';$('return-item').disabled=!s.selectedItem;
   $('slots').textContent=`${s.items.reduce((n,i)=>n+dims(i).w*dims(i).h,0)} / ${COLS*ROWS}`;
 }
 function selectItem(item){
-  let t=TYPES[item.type];if(s.phase==='prep'){s.selectedDeck=null;s.selectedItem=s.selectedItem===item.id?null:item.id;status(s.selectedItem?`Переместите ${t.name.toLowerCase()} или поверните ↻.`:'Предмет не выбран.');render();return}
+  let t=TYPES[item.type];if(s.phase==='prep'){s.selectedDeck=null;s.selectedItem=s.selectedItem===item.id?null:item.id;status(s.selectedItem?`Переместите ${t.name.toLowerCase()} поверните ↻ или верните в колоду.`:'Предмет не выбран.');render();return}
   if(s.phase!=='battle'||resolving)return;
   if(t.kind==='herb'){s.herbs=s.herbs.includes(item.id)?s.herbs.filter(id=>id!==item.id):[...s.herbs,item.id];s.selectedItem=item.id;pending=item.type==='green'?{kind:'heal',id:item.id}:null;status('Зелёная — лечение. Выберите ещё травы для смешивания за один ход.');render();return}
   if(t.kind==='mix'){useHeal(item);return}
@@ -175,6 +178,7 @@ $('rules-open').addEventListener('click',()=>$('rules').showModal());
 function pointCell(cx,cy){let r=$('case-grid').getBoundingClientRect();if(cx<r.left||cx>=r.right||cy<r.top||cy>=r.bottom)return null;return{x:Math.floor((cx-r.left)/r.width*COLS),y:Math.floor((cy-r.top)/r.height*ROWS)}}
 function attachDrag(el,item,origin){let start=null,ghost=null,moved=false;el.addEventListener('pointerdown',e=>{if((origin==='deck'&&s.phase!=='prep')||(origin==='case'&&s.phase==='end'))return;start={x:e.clientX,y:e.clientY};moved=false});el.addEventListener('pointermove',e=>{if(!start)return;if(!moved&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>9){moved=true;ghost=document.createElement('div');ghost.className='drag-ghost';ghost.textContent=TYPES[item.type].icon;document.body.append(ghost);el.setPointerCapture(e.pointerId)}if(ghost){ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px'}});el.addEventListener('pointerup',e=>{if(!start)return;if(moved){e.preventDefault();e.stopPropagation();let cell=pointCell(e.clientX,e.clientY);if(origin==='deck'&&cell){s.selectedDeck=item.id;s.selectedItem=null;place(cell.x,cell.y)}else if(origin==='case'&&s.phase==='prep'&&cell){s.selectedItem=item.id;place(cell.x,cell.y)}else if(origin==='case'&&s.phase==='battle'&&$('arena').getBoundingClientRect().top<=e.clientY&&e.clientY<=$('arena').getBoundingClientRect().bottom){if(TYPES[item.type].kind==='weapon')fire(item);else if(item.type==='green'||item.type==='mix')useHeal(item)}}ghost?.remove();ghost=null;start=null;moved=false});el.addEventListener('pointercancel',()=>{ghost?.remove();ghost=null;start=null;moved=false})}
 $('rotate').addEventListener('click',()=>{let item=s.deck.find(i=>i.id===s.selectedDeck)||s.items.find(i=>i.id===s.selectedItem);if(!item)return status('Сначала выберите предмет.');item.rot=!item.rot;if(s.items.includes(item)&&!canPlace(item,item.x,item.y,item)){item.rot=!item.rot;return status('В этой позиции предмет не повернуть. Переместите его.')};render()});
+$('return-item').addEventListener('click',()=>{if(s.phase!=='prep')return;const item=s.items.find(i=>i.id===s.selectedItem);if(!item)return;item.used=false;s.items=s.items.filter(i=>i.id!==item.id);s.selectedItem=null;s.selectedDeck=null;status('Предмет возвращён. Можно выбрать замену.');render();});
 $('reroll').addEventListener('click',()=>{s.items=[];drawDeck()});$('combine').addEventListener('click',combine);
 $('primary').addEventListener('click',()=>{if(s.phase==='prep')start();else if(s.phase==='end')reset();else commitTurn()});
 drawDeck();
