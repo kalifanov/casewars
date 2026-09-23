@@ -42,7 +42,7 @@ function renderGrid(){
   s.items.forEach(item=>{let t=TYPES[item.type],{w,h}=dims(item),el=document.createElement('div');el.className=`case-item item-${item.type} ${s.selectedItem===item.id?'active':''} ${s.herbs.includes(item.id)?'marked':''}`;
     el.style.cssText=`left:${item.x/COLS*100}%;top:${item.y/ROWS*100}%;width:${w/COLS*100}%;height:${h/ROWS*100}%`;
     const caption=item.type==='mix'?item.mix.join('+').map(k=>k[0].toUpperCase()).join(''):t.name;
-    let count=t.kind==='ammo'?`<small>×${item.remaining??t.amount}</small>`:'';
+    let count=t.kind==='ammo'?`<small>×${item.remaining??t.amount}</small>`:t.kind==='weapon'&&s.phase==='battle'?`<small>ЗАРЯДЫ ${s.ammo[t.ammo]}</small>`:'';
     el.innerHTML=`<div class="item-face"><span class="item-art">${t.icon}</span><span class="item-info">${caption}${count}</span></div>`;
     el.addEventListener('click',ev=>{ev.stopPropagation();selectItem(item)});attachDrag(el,item,'case');layer.append(el)
   });

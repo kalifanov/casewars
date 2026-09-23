@@ -1,15 +1,51 @@
-# CASEFIRE — PvP inventory duel prototype
+# Casewars
 
-Standalone mobile-first web prototype. There is no build step or server dependency. Open `index.html` locally or publish these three files through GitHub Pages.
+Веб-прототип боя через инвентарь: случайный набор предметов, чемодан 8×5, оружие с расходом боеприпасов и смешивание трав. Противник — локальный бот; сетевого PvP пока нет.
 
-## Loop
+Игра: https://kalifanov.github.io/casewars/
+Репозиторий: https://github.com/kalifanov/casewars
 
-1. Select items from a randomly drawn deck. Click a card, then a free cell in the 8×5 case. Rotate with ↻. You can drag from the deck to the case on touch screens or with a mouse.
-2. Start a duel with a local bot. The case remains open; click or drag a weapon into the arena to fire. The pistol uses pistol ammo, shotgun uses shells, and launcher fires once.
-3. Click or drag a green herb to heal. Select two or three herbs and click **Смешать травы** to make a mix. Green + red increases healing; a mix containing green + yellow adds maximum HP.
+## Локальная работа
 
-This is a single-player interaction test with a simulated opponent, not network PvP. All visuals are simple original CSS and symbols. Character names and familiar item categories are temporary concept references to Resident Evil and would need to be replaced for a standalone commercial product.
+Сборщик и установка зависимостей не нужны. Откройте `index.html` в браузере. Код игры находится в `script.js`, оформление — в `style.css`.
 
-## Publish on GitHub Pages
+Перед публикацией:
 
-Create a repository, put the contents of this directory at the repository root, and push to `main`. In **Settings → Pages**, choose **Deploy from a branch**, branch `main`, folder `/ (root)`. The prototype will appear at `https://<username>.github.io/<repository>/`.
+1. Выполните `node --check script.js` из папки проекта.
+2. Откройте `index.html` и проверьте размещение и поворот предметов, начало боя, расход пачек патронов, смешивание и применение трав, новый раунд.
+3. Проверьте интерфейс на телефоне.
+4. Просмотрите изменения командой `git diff`.
+
+## Публикация через GitHub Pages
+
+В репозитории откройте Settings → Pages. Для публикации непосредственно из файлов проекта выберите Deploy from a branch, ветку `main`, папку `/ (root)`. Это настройка на стороне GitHub: наличие локальных файлов само по себе её не подтверждает.
+
+После настройки каждый отправленный в `main` коммит запускает публикацию. Отдельный GitHub Release не требуется.
+
+Команды из папки проекта для обновления игры:
+
+```powershell
+node --check script.js
+git diff
+git add index.html style.css script.js README.md
+git commit -m "Update Casewars prototype"
+git push origin main
+```
+
+Добавляйте в коммит только проверенные изменения. Статус публикации смотрите во вкладке Actions репозитория; после успешного завершения проверьте страницу игры.
+
+## Доступ к репозиторию
+
+`origin` использует SSH: `git@github.com:kalifanov/casewars.git`. Для этого локального репозитория настроен отдельный ключ через `core.sshCommand`; доступ на чтение и запись проверен.
+При ошибке `Permission denied (publickey)` нужно настроить SSH-ключ для GitHub либо использовать HTTPS и вход через установленный Git Credential Manager:
+
+```powershell
+git remote set-url origin https://github.com/kalifanov/casewars.git
+git push origin main
+```
+
+Вход выполняет владелец аккаунта. Не сохраняйте токены и приватные ключи в файлах проекта.
+
+## Состояние перенесённой версии
+
+Название интерфейса — CASEWARS. Расход патронов из пачек реализован; опустевшая пачка удаляется. Интерфейс адаптирован под высоту экрана с сохранением узкого портретного формата: ширина до 480 px, квадратные клетки, компактный выбор предметов и кнопки внизу. Проверены размеры 320×568, 390×844 и 1440×900, начало боя, победа и новый раунд. Во время боя доступный боезапас также отображается на оружии.
