@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1418" />
+  <title>CASEFIRE — прототип боя через инвентарь</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar"><div class="brand"><span class="brand-mark">▣</span><span>CASEFIRE <small>TACTICAL INVENTORY DUEL</small></span></div><div class="round" id="round">ПРОТОТИП · РАУНД 1</div></header>
+    <section class="arena" id="arena" aria-label="Поле боя">
+      <div class="arena-grid"></div><div class="cover cover-one"></div><div class="cover cover-two"></div><div class="cover cover-three"></div>
+      <div class="combatant player" id="player"><div class="fighter-avatar">L</div><div class="fighter-label">ЛЕОН</div></div>
+      <div class="combatant enemy" id="enemy"><div class="fighter-avatar">A</div><div class="fighter-label">АДА</div></div>
+      <div class="arena-vignette"></div>
+      <div class="hud hud-player"><div class="hud-name">ЛЕОН <span id="player-health-text">100 / 100</span></div><div class="health-track"><div class="health-fill" id="player-health"></div></div></div>
+      <div class="hud hud-enemy"><div class="hud-name">АДА <span id="enemy-health-text">100 / 100</span></div><div class="health-track"><div class="health-fill enemy-fill" id="enemy-health"></div></div></div>
+      <div class="arena-center" id="arena-message">СОБЕРИТЕ ЧЕМОДАН</div>
+      <div class="effect-layer" id="effects"></div>
+      <div class="phase-chip" id="phase-chip">01 / ПОДГОТОВКА</div>
+    </section>
+    <div class="workspace">
+      <section class="draft" id="draft-section"><div class="section-heading"><div><span class="eyebrow">СЛУЧАЙНАЯ ВЫДАЧА</span><h2>Выберите снаряжение</h2></div><button class="quiet" id="reroll">↻ Новая колода</button></div><div class="draft-cards" id="draft"></div><p class="help" id="draft-help">Нажмите на предмет, затем на свободные клетки чемодана. Кнопка ↻ поворачивает выбранный предмет.</p></section>
+      <section class="case-wrap"><div class="case-lid"><div class="case-stamp">C A S E F I R E <span>◈</span> FIELD EQUIPMENT</div><div class="case-lid-detail">SURVIVE THE LOADOUT · CONTROL THE FIGHT</div></div><div class="case-body"><div class="case-title"><div><span class="eyebrow">ВАШ ИНВЕНТАРЬ</span><h2>Тактический чемодан</h2></div><div class="case-tools"><button class="tool-btn" id="rotate" title="Повернуть предмет">↻ <span>Повернуть</span></button><span id="slots">0 / 40</span></div></div><div class="grid-shell"><div class="case-grid" id="case-grid" aria-label="Ячейки чемодана"></div><div class="case-items" id="case-items"></div></div><div class="case-handle"></div></div></section>
+      <section class="controls"><div class="status" id="status">Выберите предмет из колоды.</div><div class="action-row"><button class="secondary" id="combine" hidden>✚ Смешать травы</button><button class="primary" id="primary">НАЧАТЬ БОЙ <span>➜</span></button></div></section>
+      <section class="guide"><div><b>01 · НАБОР</b><span>Уложите оружие, патроны и травы. Предметы ограничены размером чемодана.</span></div><div><b>02 · БОЙ</b><span>Нажмите на оружие в чемодане, чтобы атаковать. Патроны расходуются.</span></div><div><b>03 · ЛЕЧЕНИЕ</b><span>Зелёная трава лечит. Красная усиливает её. Жёлтая с зелёной добавляет максимальное здоровье.</span></div></section>
+    </div>
+    <footer>Интерактивный концепт · локальный бой с ботом · без сетевого PvP</footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
