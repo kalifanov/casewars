@@ -102,7 +102,7 @@ function renderTactics(){
   const f=duel.player;
   $('phase-chip').textContent=`ХОД ${duel.turn} / 24 · ${resolving?'РАЗРЕШЕНИЕ':'ВАШ ВЫБОР'}`;
   $('arena-message').textContent=resolving?'ДЕЙСТВИЯ РАСКРЫТЫ':'СОПЕРНИК ВЫБРАЛ · ВЫБОР СКРЫТ';
-  $('turn-info').textContent=`Выносливость ${f.energy}/2 · враг ${duel.enemy.energy}/2 · ${duel.turn<9?`сужение через ${9-duel.turn} х.`:'АРЕНА СУЖАЕТСЯ'}`;
+  $('turn-info').textContent=`Выносливость ${f.energy}/2 · враг ${duel.enemy.energy}/2`;
   $('primary').textContent=resolving?'РАЗРЕШЕНИЕ…':pending?`${actionName(pending,f)} · ХОД ✓`:'ВЫБЕРИТЕ ДЕЙСТВИЕ';
   $('primary').disabled=resolving||!Duel.legal(f,pending,duel.turn);
   for(const kind of ['guard','dodge','strike']){
@@ -146,7 +146,7 @@ function commitTurn(){
   resolving=true;
   duel=Duel.resolve(duel,pending,enemyPlan);syncDuel();
   const last=duel.last;
-  $('turn-log').textContent=`Вы: ${actionName(last.player,duel.player)}${last.player.damage?' −'+last.player.dealt:''} · Враг: ${actionName(last.enemy,duel.enemy)}${last.enemy.damage?' −'+last.enemy.dealt:''}${last.pressure?' · зона −'+last.pressure:''}`;
+  $('turn-log').textContent=`Вы: ${actionName(last.player,duel.player)}${last.player.damage?' −'+last.player.dealt:''} · Враг: ${actionName(last.enemy,duel.enemy)}${last.enemy.damage?' −'+last.enemy.dealt:''}`;
   pending=null;s.selectedItem=null;s.herbs=[];render();
   $('phase-chip').textContent=`ХОД ${last.turn} · ДЕЙСТВИЯ РАСКРЫТЫ`;
   animateAction('player',last.player);animateAction('enemy',last.enemy);

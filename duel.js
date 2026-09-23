@@ -79,10 +79,9 @@
     const player = prepare(next.player, playerAction, turn), enemy = prepare(next.enemy, enemyAction, turn);
     player.dealt = damage(player, enemyAction.kind);
     enemy.dealt = damage(enemy, playerAction.kind);
-    const pressure = turn >= 9 ? 4 + Math.floor((turn - 9) / 3) * 2 : 0;
-    next.player.hp = Math.max(0, next.player.hp - enemy.dealt - pressure);
-    next.enemy.hp = Math.max(0, next.enemy.hp - player.dealt - pressure);
-    next.last = { player, enemy, pressure, turn };
+    next.player.hp = Math.max(0, next.player.hp - enemy.dealt);
+    next.enemy.hp = Math.max(0, next.enemy.hp - player.dealt);
+    next.last = { player, enemy, turn };
     next.turn++;
     if (!next.player.hp && !next.enemy.hp) next.result = 'draw';
     else if (!next.enemy.hp) next.result = 'win';

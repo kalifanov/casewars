@@ -46,12 +46,11 @@ test('empty packs disappear and attacks without ammo are illegal',()=>{
  assert.equal(D.legal(n.player,shot,99),false);
 });
 test('stalling ends, and every legal matchup is symmetric when sides swap',()=>{
- let n=fresh();while(!n.result)n=D.resolve(n,guard,guard);
- assert.equal(n.result,'draw');assert.ok(n.turn<=25);
+ let n=fresh();while(!n.result){n=D.resolve(n,guard,guard);assert.equal(n.player.hp,100);assert.equal(n.enemy.hp,100);}
+ assert.equal(n.result,'draw');assert.equal(n.turn,25);
  const s=fresh();
  for(const a of D.actions(s.player,1))for(const b of D.actions(s.enemy,1)){
    const x=D.resolve(s,a,b),y=D.resolve(s,b,a);
    assert.deepEqual(x.player,y.enemy);assert.deepEqual(x.enemy,y.player);
  }
 });
-
