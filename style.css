@@ -94,3 +94,36 @@ footer { flex-shrink: 0; padding: 3px 6px 5px; font-size: 9px; }
   .fighter-label { margin-top: 4px; font-size: 8px; }
   .player, .enemy { top: 68%; }
 }
+/* Simultaneous turn controls and readable combat feedback. */
+[hidden] { display: none !important; }
+.turn-info { font-size: 10px; color: #c6b48c; margin-bottom: 5px; }
+.tactic-actions { display: grid; grid-template-columns: 1fr 1.3fr 1fr 30px; gap: 5px; margin-bottom: 6px; }
+.tactic-actions button { height: 34px; padding: 3px; border: 1px solid #65756c; border-radius: 4px; background: #22352f; color: #e8e9df; font-size: 11px; }
+.tactic-actions .chosen { border-color: #f6c980; background: #665132; }
+button:disabled { opacity: .45; cursor: default; }
+.cooling .item-face { opacity: .5; border-style: dashed; }
+.turn-log { position: absolute; left: 10px; right: 10px; bottom: 22px; z-index: 6; font-size: 10px; text-align: center; color: #f4d19b; background: #0c171bba; border-radius: 3px; }
+.turn-log:empty { display: none; }
+.arena-center { width: max-content; max-width: 95%; font-size: 10px; }
+.arena:has(~ .workspace #tactics:not([hidden])) .combatant { top: 57%; }
+.blocking .fighter-avatar { outline: 5px solid #80cbef; box-shadow: 0 0 30px #6cbcff; }
+.healing .fighter-avatar { box-shadow: 0 0 30px #8df998; }
+.dodging { animation: evade 1s ease-in-out; }
+.firing .fighter-avatar { animation: recoil .5s ease-out; }
+.hit .fighter-avatar { animation: impact .8s ease-out; }
+.turn-projectile { position: absolute; top: 54%; width: 15px; height: 5px; background: #ffd78e; border-radius: 50%; box-shadow: 0 0 15px #ffae38; }
+.turn-projectile.player { animation: player-shot .6s ease-in forwards; }
+.turn-projectile.enemy { animation: enemy-shot .6s ease-in forwards; }
+.turn-projectile.shotgun { height: 20px; box-shadow: 0 9px 0 #fbd68f, 0 -9px 0 #fbd68f; }
+.turn-projectile.launcher { height: 15px; width: 24px; background: #f98f42; }
+.turn-projectile.strike { height: 24px; width: 24px; background: #fff5; }
+@keyframes player-shot { from { left: 23%; } 85% { left: 77%; opacity: 1; } to { left: 77%; transform: scale(3); opacity: 0; } }
+@keyframes enemy-shot { from { left: 77%; } 85% { left: 23%; opacity: 1; } to { left: 23%; transform: scale(3); opacity: 0; } }
+@keyframes evade { 40%,70% { transform: translate(-50%,-100%); opacity: .6; } }
+@keyframes recoil { 30% { transform: translateX(-8px); filter: brightness(2.5); } }
+@keyframes impact { 40% { background: #d44535; transform: rotate(12deg); filter: brightness(2); } }
+dialog { width: min(92vw,450px); max-height: 85dvh; overflow: auto; border: 1px solid #ad956b; border-radius: 10px; background: #142522; color: #e9e7dc; padding: 20px; font-size: 13px; line-height: 1.5; }
+dialog::backdrop { background: #000b; }
+dialog .primary { width: 100%; }
+@media (max-height: 700px) { .turn-info { font-size: 9px; } .tactic-actions button { height: 30px; font-size: 10px; } .turn-log { font-size: 9px; } }
+@media (prefers-reduced-motion: reduce) { .dodging, .firing .fighter-avatar, .hit .fighter-avatar, .turn-projectile { animation-duration: .01s; } }
